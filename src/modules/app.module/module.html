@@ -1,0 +1,36 @@
+{{ require_css(get_asset_url('../../main.css')) }}
+{{ require_js(get_asset_url('../../main.js'), 'footer') }}
+{%- set instance_id = name %}
+<style>
+  .loadingBlock{
+
+    text-align: center;
+    font-style: italic;
+  }
+
+  .navMenu{
+    background: #91b09d;
+    text-align: center;
+    font-family: 'Georgia';
+    padding-top: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 50px;
+  }
+
+  .experienceLegend{
+    margin-top: 10px;
+  }
+
+  body{
+    margin-top: -50px !important;
+  }
+</style>
+<div class="cms-react-boilerplate">
+  <script type="application/json"
+    data-module-instance="{{ instance_id }}"
+    data-portal-id="{{ portal_id }}">
+      {{ module|tojson }}
+  </script>
+
+  <div id="App--{{ instance_id }}"></div>
+</div>
