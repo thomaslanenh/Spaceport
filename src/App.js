@@ -5,6 +5,8 @@ import {setContext} from "@apollo/client/link/context";
 import {
   LineChart,
   PieChart,
+    RadialBarChart,
+    RadialBar,
   Pie,
   ComposedChart,
   Line,
@@ -31,6 +33,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
 
+
 function App({ moduleData }) {
   const [aliens, setAliens] = useState(null);
   const [planets, setPlanets] = useState(null);
@@ -42,7 +45,7 @@ function App({ moduleData }) {
 
   const authLink = setContext((_, { headers }) => {
     // get the authentication token from local storage if it exists
-    const token = 'pat-na1-dda6dff1-97f1-45d9-b24a-33643458c9ae';
+    const token = 'HIDDEN';
     // return the headers to the context so httpLink can read them
     return {
       headers: {
@@ -59,7 +62,7 @@ function App({ moduleData }) {
       cache: new InMemoryCache()
     })
 
-    const data = client.query({
+    let data = client.query({
       query: gql`
       {
   CRM {
@@ -77,7 +80,7 @@ function App({ moduleData }) {
     }).then((result)=>{console.log(result.data.CRM.p_planet_collection.items); setPlanets(result.data.CRM.p_planet_collection.items)})
 
 
-    const aliens = client.query({
+    let aliens = client.query({
       query: gql`
       {
   CRM {
@@ -95,6 +98,47 @@ function App({ moduleData }) {
 }
       `
     }).then((result)=>{console.log(result.data.CRM.p_alien_collection.items); setAliens(result.data.CRM.p_alien_collection.items)})
+
+
+    const interval = setInterval(()=>{
+     data = client.query({
+        query: gql`
+      {
+  CRM {
+    p_planet_collection(limit: 100, orderBy: yearsofexperience__desc, filter: {yearsofexperience__null: false}) {
+      items {
+        yearsofexperience
+        name
+        color
+        atmosphere
+      }
+    }
+  }
+}
+    `
+      }).then((result)=>{console.log(result.data.CRM.p_planet_collection.items); setPlanets(result.data.CRM.p_planet_collection.items)})
+
+
+      aliens = client.query({
+        query: gql`
+      {
+  CRM {
+    p_alien_collection(orderBy: hs_createdate__desc, limit: 10) {
+      items {
+        name
+        planet
+        profile_image_url
+        experience
+        hs_object_id
+        alien_job
+      }
+    }
+  }
+}
+      `
+      }).then((result)=>{console.log(result.data.CRM.p_alien_collection.items); setAliens(result.data.CRM.p_alien_collection.items)})
+
+    }, 10000)
 
   },[])
 
@@ -115,11 +159,12 @@ function App({ moduleData }) {
 
   console.log(planets)
   return (
-    <div className="cms-react-boilerplate__container" style={{"margin-top" : "50px"}}>
+    <div className={`cms-react-boilerplate__container`} style={{"margin-top" : "50px"}}>
+      <Grid container md={12} className={"navMenu"}>
+        <Grid xs={6}>Spaceport 75</Grid>
+        <Grid xs={6}><a href={"https://github.com/thomaslanenh/Spaceport"} aria-label={"Check out the GitHub Repo"}>View the Code!</a></Grid>
+      </Grid>
       <Grid container spacing={2}>
-        <Grid md={12} className={"navMenu"}>
-          Spaceport 75
-        </Grid>
         <Grid xs>
           {planets && aliens ?
               <div style={{"height" : "100%", "width" : "50%"}}>
@@ -201,12 +246,25 @@ function App({ moduleData }) {
               <RadarChart outerRadius={90} width={730} height={250} data={planets}>
                 <PolarGrid/>
                 <PolarAngleAxis dataKey="name"/>
-                <PolarRadiusAxis angle={30} domain={[0,20]}/>
+                <PolarRadiusAxis angle={30} domain={[0,200]}/>
                 <Radar name="Experience" dataKey="yearsofexperience" stroke="#7118C4" fill="#6CC417" fillOpacity={0.6}/>
                 <Legend wrapperStyle={{position: 'relative', marginTop: '10px'}} />
               </RadarChart>
             </Grid>
-            : null
+            :<Grid container md={12} className={"loadingBar"}><Grid md={12}><p>🪐 Loading... 👽</p></Grid></Grid>
+        }
+        {aliens ?
+            <Grid xs>
+              <LineChart width={730} height={250} data={aliens}   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray={"3 3"}/>
+                <XAxis dataKey={"name"}/>
+                <YAxis/>
+                <Tooltip/>
+                <Legend/>
+                <Line type={"monotone"} dataKey={"experience"} stroke={"#8884d8"}/>
+              </LineChart>
+            </Grid>
+            :<Grid container md={12} className={"loadingBar"}><Grid md={12}><p>🪐 Address 402697. Address 413576. Flight. This is Space Venture. The computer is ready. 👽</p></Grid></Grid>
         }
       </Grid>
 
